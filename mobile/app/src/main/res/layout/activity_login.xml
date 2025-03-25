@@ -31,8 +31,6 @@
         android:layout_below="@id/welcomeText"
         android:layout_marginTop="30dp"
         android:hint="Username or Email"
-        android:drawableStart="@drawable/ic_user"
-        android:background="@drawable/input_background"
         android:padding="10dp" />
 
     <EditText
