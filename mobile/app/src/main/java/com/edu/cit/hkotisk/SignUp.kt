@@ -15,6 +15,7 @@ class SignUp : AppCompatActivity() {
     private var isPasswordVisible = false
     private var isConfirmPasswordVisible = false
 
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivitySignupBinding.inflate(layoutInflater)
@@ -38,6 +39,9 @@ class SignUp : AppCompatActivity() {
             if (validateForm()) {
                 performSignUp()
             }
+        }
+        binding.loginText.setOnClickListener {
+            startActivity(Intent(this@SignUp, Login::class.java))
         }
     }
 

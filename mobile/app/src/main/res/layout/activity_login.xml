@@ -100,12 +100,13 @@
         android:id="@+id/signUpLink"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Sign Up"
-        android:textSize="14sp"
-        android:textStyle="bold"
-        android:textColor="@color/maroon"
-        android:layout_toEndOf="@id/signUpText"
         android:layout_below="@id/microsoftLogin"
-        android:layout_marginTop="15dp" />
+        android:layout_marginStart="-86dp"
+        android:layout_marginTop="45dp"
+        android:layout_toEndOf="@id/signUpText"
+        android:text="Sign Up"
+        android:textColor="@color/maroon"
+        android:textSize="14sp"
+        android:textStyle="bold" />
 
 </RelativeLayout>
