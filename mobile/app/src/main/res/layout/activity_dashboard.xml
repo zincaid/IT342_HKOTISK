@@ -45,19 +45,24 @@
                 app:layout_constraintStart_toEndOf="@id/canteen_icon"
                 app:layout_constraintTop_toTopOf="parent">
 
-                <TextView
-                    android:id="@+id/canteen_title"
+                <Spinner
+                    android:id="@+id/canteen_spinner"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="CANTEEN •"
+                    android:layout_marginStart="8dp"
+                    android:backgroundTint="@color/white"
+                    android:popupBackground="@color/white"
+                    android:spinnerMode="dropdown"
+                    android:entries="@array/canteen_list"
                     android:textColor="@color/white"
-                    android:textSize="12sp"
-                    android:textStyle="bold" />
+                    android:textSize="12sp" />
 
                 <TextView
                     android:id="@+id/canteen_location"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:layout_marginTop="4dp"
                     android:text="Canteen 1 (Behind NGE)"
                     android:textColor="@color/white"
                     android:textSize="14sp" />
