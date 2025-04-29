@@ -1,20 +1,24 @@
 package com.edu.cit.hkotisk
 
+import android.content.Intent
 import android.os.Bundle
-import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
 
 class LandingPage : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
-        setContentView(R.layout.activity_landing_page)
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
-            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
-            insets
+        
+        // Check if token exists in SharedPreferences
+        val sharedPrefs = getSharedPreferences("secure_prefs", MODE_PRIVATE)
+        val token = sharedPrefs.getString("auth_token", null)
+        
+        if (token != null) {
+            // Token exists, redirect to Dashboard
+            startActivity(Intent(this, Dashboard::class.java))
+            finish()
+        } else {
+            // No token, show landing page
+            setContentView(R.layout.activity_landing_page)
         }
     }
 }
