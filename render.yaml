@@ -1,0 +1,18 @@
+services:
+  - type: web
+    name: hkotisk-backend
+    env: docker
+    region: singapore # Using Singapore region for lower latency in APAC
+    plan: starter # Free tier
+    healthCheckPath: /actuator/health
+    envVars:
+      - key: SPRING_PROFILES_ACTIVE
+        value: prod
+      - key: SPRING_DATASOURCE_URL
+        value: jdbc:mysql://hkotisk-hkotisk-it342.k.aivencloud.com:26333/defaultdb?ssl-mode=REQUIRED
+      - key: SPRING_DATASOURCE_USERNAME
+        value: avnadmin
+      - key: SPRING_DATASOURCE_PASSWORD
+        value: AVNS_me9NKGkqkEcnepwEzAR
+    buildCommand: docker build -t hkotisk-backend .
+    startCommand: docker run -p 8080:8080 hkotisk-backend
