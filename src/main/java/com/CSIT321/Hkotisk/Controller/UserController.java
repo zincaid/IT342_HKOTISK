@@ -29,6 +29,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+import jakarta.validation.Valid;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
@@ -81,24 +82,27 @@ public class UserController extends TextWebSocketHandler {
 
     // Adds a product to the cart
     @PostMapping("/cart")
-    public ResponseEntity<ServerResponse> addToCart(@RequestBody cartDTO cart, Authentication auth) throws IOException {
+    public ResponseEntity<ServerResponse> addToCart(@Valid @RequestBody cartDTO cart, Authentication auth) throws IOException {
         ServerResponse resp = new ServerResponse();
-        if (cart.getSize() != null) {
-            cart.setSize(cart.getSize().toUpperCase());
-        }
         try {
             User loggedUser = userRepo.findByEmail(auth.getName())
                     .orElseThrow(() -> new UserCustomException(auth.getName()));
             ProductEntity cartItem = prodRepo.findByProductId(cart.getProductId());
+            if (cartItem == null) {
+                throw new ProductCustomException("Product not found");
+            }
 
-            // Check if the selected size is valid
-            if (cart.getSize() != null && !Arrays.asList(cartItem.getSizes()).contains(cart.getSize())) {
-                throw new CartCustomException("Invalid size selected");
+            // Check if product is available and has enough quantity
+            if (!cartItem.isAvailable()) {
+                throw new CartCustomException("Product is not available");
+            }
+            if (cartItem.getQuantity() < cart.getQuantity()) {
+                throw new CartCustomException("Not enough stock available");
             }
 
             // Check if the item already exists in the cart
-            Optional<CartEntity> existingCartItem = cartRepo.findByEmailAndProductIdAndProductSizeAndIsOrderedFalse(
-                    loggedUser.getEmail(), cart.getProductId(), cart.getSize());
+            Optional<CartEntity> existingCartItem = cartRepo.findByEmailAndProductIdAndIsOrderedFalse(
+                    loggedUser.getEmail(), cart.getProductId());
 
             if (existingCartItem.isPresent()) {
                 // Update the quantity of the existing item
@@ -110,13 +114,10 @@ public class UserController extends TextWebSocketHandler {
                 CartEntity buf = new CartEntity();
                 buf.setEmail(loggedUser.getEmail());
                 buf.setQuantity(cart.getQuantity());
-                buf.setPrice(cart.getPrice() != 0.0 ? cart.getPrice() : cartItem.getPriceForSize(cart.getSize()));
+                buf.setPrice(cart.getPrice() != 0.0 ? cart.getPrice() : cartItem.getPrice());
                 buf.setProductId(cart.getProductId());
                 buf.setProductCategory(cartItem.getCategory());
                 buf.setProductName(cartItem.getProductName());
-                if (cart.getSize() != null) {
-                    buf.setProductSize(cart.getSize()); // Store the selected size
-                }
                 buf.setDateAdded(new Date());
 
                 cartRepo.save(buf);
@@ -132,7 +133,7 @@ public class UserController extends TextWebSocketHandler {
             throw new CartCustomException("Unable to add product to cart, product not found");
         } catch (CartCustomException e) {
             logger.severe("Cart error: " + e.getMessage());
-            throw new CartCustomException("Unable to add product to cart, invalid size selected");
+            throw new CartCustomException(e.getMessage());
         } catch (Exception e) {
             logger.severe("Unexpected error: " + e.getMessage());
             throw new CartCustomException("Unable to add product to cart, please try again");
@@ -170,7 +171,6 @@ public class UserController extends TextWebSocketHandler {
                     .orElseThrow(() -> new UserCustomException(auth.getName()));
             CartEntity studentCart = cartRepo.findByCartIdAndEmail(Integer.parseInt(cart.get("id")), loggedUser.getEmail());
             studentCart.setQuantity(Integer.parseInt(cart.get("quantity")));
-            studentCart.setProductSize(String.valueOf(cart.get("size")).toUpperCase());
             cartRepo.save(studentCart);
             List<CartEntity> studentCarts = cartRepo.findByEmail(loggedUser.getEmail());
             resp.setStatus(ResponseCode.SUCCESS_CODE);
@@ -227,6 +227,12 @@ public class UserController extends TextWebSocketHandler {
                 studentCart.setOrderId(res.getOrderId());
                 studentCart.setOrdered(true);
                 cartRepo.save(studentCart);
+
+                // Update product quantity and availability
+                ProductEntity product = prodRepo.findByProductId(studentCart.getProductId());
+                product.setQuantity(Math.max(0, product.getQuantity() - studentCart.getQuantity()));
+                // updateAvailability() will be called by @PreUpdate
+                prodRepo.save(product);
             });
             resp.setStatus(ResponseCode.SUCCESS_CODE);
             resp.setMessage(ResponseCode.ORD_SUCCESS_MESSAGE);

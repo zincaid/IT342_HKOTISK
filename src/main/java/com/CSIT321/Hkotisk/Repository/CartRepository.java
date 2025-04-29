@@ -15,7 +15,7 @@ public interface CartRepository extends JpaRepository<CartEntity, Long> {
 
     List<CartEntity> findAllByEmailAndIsOrderedFalse(String email);
 
-    Optional<CartEntity> findByEmailAndProductIdAndProductSizeAndIsOrderedFalse(String email, int productId, String productSize);
+    Optional<CartEntity> findByEmailAndProductIdAndIsOrderedFalse(String email, int productId);
 
     CartEntity findByCartIdAndEmail(int cartId, String email);
 

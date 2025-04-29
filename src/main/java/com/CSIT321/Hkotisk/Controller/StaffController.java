@@ -59,19 +59,9 @@ public class StaffController {
         try {
             ProductEntity prod = new ProductEntity();
             prod.setDescription(input.getDescription());
-            prod.setPrices(input.getPrices());
-            if (input.getPrices() != null) {
-                prod.setPrices(Arrays.stream(input.getPrices()).toArray());
-            }
             prod.setProductName(input.getProductName());
+            prod.setPrice(input.getPrice());
             prod.setQuantity(input.getQuantity());
-            if (input.getQuantity() != null) {
-                prod.setQuantity(Arrays.stream(input.getQuantity()).toArray());
-            }
-
-            if (input.getSizes() != null) {
-                prod.setSizes(Arrays.stream(input.getSizes()).map(String::toUpperCase).toArray(String[]::new));
-            }
             prod.setCategory(input.getCategory());
             prod.setProductImage(input.getProductImage());
             prodRepo.save(prod);
@@ -92,14 +82,15 @@ public class StaffController {
         ServerResponse resp = new ServerResponse();
         try {
             ProductEntity prod;
-            if (productDTO.getProductImage() != null) {
-                prod = new ProductEntity(id, productDTO.getDescription(), productDTO.getProductName(),
-                        productDTO.getPrices(), productDTO.getQuantity(), productDTO.getSizes(), productDTO.getCategory(), productDTO.getProductImage());
-            } else {
-                ProductEntity prodOrg = prodRepo.findByProductId(id);
-                prod = new ProductEntity(id, productDTO.getDescription(), productDTO.getProductName(),
-                        productDTO.getPrices(), productDTO.getQuantity(), productDTO.getSizes(), productDTO.getCategory(), prodOrg.getProductImage());
-            }
+            ProductEntity prodOrg = prodRepo.findByProductId(id);
+            prod = new ProductEntity();
+            prod.setProductId(id);
+            prod.setDescription(productDTO.getDescription());
+            prod.setProductName(productDTO.getProductName());
+            prod.setPrice(productDTO.getPrice());
+            prod.setQuantity(productDTO.getQuantity());
+            prod.setCategory(productDTO.getCategory());
+            prod.setProductImage(productDTO.getProductImage() != null ? productDTO.getProductImage() : prodOrg.getProductImage());
             prodRepo.save(prod);
             resp.setStatus(ResponseCode.SUCCESS_CODE);
             resp.setMessage("Product with ID " + id + " updated successfully");

@@ -79,6 +79,7 @@ public class OAuth2LoginSuccessHandler extends SimpleUrlAuthenticationSuccessHan
     }
 
     private String getEmail(Map<String, Object> attributes) {
+        System.out.println("Attributes: "+attributes);
         if (attributes.containsKey("email")) {
             return (String) attributes.get("email"); // Google
         } else if (attributes.containsKey("preferred_username")) {

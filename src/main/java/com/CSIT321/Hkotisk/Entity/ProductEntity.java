@@ -23,12 +23,11 @@ public class ProductEntity implements Serializable {
     @NotBlank(message = "Product name is mandatory")
     private String productName;
 
-    private double[] prices;
+    @Positive(message = "Price must be positive")
+    private double price;
 
-
-    private int [] quantity;
-
-    private String[] sizes;
+    @PositiveOrZero(message = "Quantity must be zero or positive")
+    private int quantity;
 
     @NotBlank(message = "Category is mandatory")
     private String category;
@@ -36,14 +35,17 @@ public class ProductEntity implements Serializable {
     @NotBlank(message = "Product Image is mandatory")
     private String productImage;
 
-    public double getPriceForSize(String size) {
-        if (sizes != null && prices != null) {
-            for (int i = 0; i < sizes.length; i++) {
-                if (sizes[i].equalsIgnoreCase(size)) {
-                    return prices[i];
-                }
-            }
-        }
-        throw new IllegalArgumentException("Size not found");
+    @PrePersist
+    @PreUpdate
+    private void updateAvailability() {
+        if (quantity < 0) quantity = 0; // Prevent negative quantities
+    }
+
+    public boolean isAvailable() {
+        return quantity > 0;
+    }
+
+    public double getPrice() {
+        return price;
     }
 }

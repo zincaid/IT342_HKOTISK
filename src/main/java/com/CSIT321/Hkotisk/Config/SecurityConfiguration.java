@@ -56,6 +56,11 @@ public class SecurityConfiguration {
                 .loginPage("/auth/signin")
                 .successHandler(oAuth2LoginSuccessHandler)
                 .failureUrl("/auth/login-failed")
+                .failureHandler((request, response, exception) -> {
+                    System.out.println("OAuth2 failure: " + exception.getMessage());
+                    exception.printStackTrace();
+                    response.sendRedirect("/auth/login-failed?error=" + exception.getMessage());
+                })
             )
             .sessionManagement(manager -> manager
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
