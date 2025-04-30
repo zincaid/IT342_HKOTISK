@@ -30,7 +30,7 @@ public class OAuth2LoginSuccessHandler extends SimpleUrlAuthenticationSuccessHan
     private JWTService jwtService;
 
     @Autowired
-    private BCryptPasswordEncoder encoder;
+    private BCryptPasswordEncoder passwordEncoder;
 
     @Autowired
     private MyUserDetailService userDetailService;
@@ -62,7 +62,7 @@ public class OAuth2LoginSuccessHandler extends SimpleUrlAuthenticationSuccessHan
                     newUser.setUsername(name);
                     newUser.setRole("staff"); // Default role
                     newUser.setEnabled(true);
-                    newUser.setPassword(encoder.encode(UUID.randomUUID().toString()));
+                    newUser.setPassword(passwordEncoder.encode(UUID.randomUUID().toString()));
                     return userRepository.save(newUser);
                 });
 

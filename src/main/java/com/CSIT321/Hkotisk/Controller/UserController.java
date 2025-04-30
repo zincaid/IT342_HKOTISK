@@ -28,6 +28,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 import jakarta.validation.Valid;
 import org.springframework.web.socket.TextMessage;
@@ -51,6 +52,9 @@ public class UserController extends TextWebSocketHandler {
 
     @Autowired
     private OrderRepository ordRepo;
+
+    @Autowired
+    private BCryptPasswordEncoder passwordEncoder;
 
     private WebSocketSession webSocketSession;
 
@@ -118,6 +122,7 @@ public class UserController extends TextWebSocketHandler {
                 buf.setProductId(cart.getProductId());
                 buf.setProductCategory(cartItem.getCategory());
                 buf.setProductName(cartItem.getProductName());
+                buf.setProductImage(cartItem.getProductImage());
                 buf.setDateAdded(new Date());
 
                 cartRepo.save(buf);
@@ -200,6 +205,77 @@ public class UserController extends TextWebSocketHandler {
             throw new CartCustomException("Unable to delete cart items, please try again");
         }
         return new ResponseEntity<CartResponse>(resp, HttpStatus.OK);
+    }
+
+    // Get user's orders
+    @GetMapping("/orders")
+    public ResponseEntity<?> getUserOrders(Authentication auth) throws IOException {
+        try {
+            User loggedUser = userRepo.findByEmail(auth.getName())
+                    .orElseThrow(() -> new UserCustomException(auth.getName()));
+            List<OrderEntity> userOrders = ordRepo.findByEmail(loggedUser.getEmail());
+            return ResponseEntity.ok(userOrders);
+        } catch (Exception e) {
+            throw new OrderCustomException("Unable to retrieve orders, please try again");
+        }
+    }
+
+    // Get user profile
+    @GetMapping("/profile")
+    public ResponseEntity<?> getUserProfile(Authentication auth) {
+        try {
+            User loggedUser = userRepo.findByEmail(auth.getName())
+                    .orElseThrow(() -> new UserCustomException(auth.getName()));
+            
+            Map<String, String> profile = new HashMap<>();
+            profile.put("username", loggedUser.getUsername());
+            profile.put("email", loggedUser.getEmail());
+            
+            return ResponseEntity.ok(profile);
+        } catch (Exception e) {
+            throw new UserCustomException("Unable to retrieve user profile, please try again");
+        }
+    }
+
+    // Update user information
+    @PutMapping("/profile")
+    public ResponseEntity<?> updateUserProfile(@RequestBody Map<String, String> updates, Authentication auth) {
+        try {
+            User loggedUser = userRepo.findByEmail(auth.getName())
+                    .orElseThrow(() -> new UserCustomException(auth.getName()));
+            
+            // Update allowed fields if provided
+            if (updates.containsKey("username")) {
+                loggedUser.setUsername(updates.get("username"));
+            }
+            if (updates.containsKey("email")) {
+                String newEmail = updates.get("email");
+                if (!newEmail.equals(loggedUser.getEmail())) {
+                    // Check if new email is already used by another user
+                    Optional<User> existingUser = userRepo.findByEmail(newEmail);
+                    if (existingUser.isPresent()) {
+                        throw new UserCustomException("Email already in use");
+                    }
+                    loggedUser.setEmail(newEmail);
+                }
+            }
+            if (updates.containsKey("password")) {
+                // Encrypt password before saving
+                String encodedPassword = passwordEncoder.encode(updates.get("password"));
+                loggedUser.setPassword(encodedPassword);
+            }
+            
+            // Preserve existing role and enabled status
+            User savedUser = userRepo.save(loggedUser);
+            
+            // Don't send password in response
+            savedUser.setPassword(null);
+            return ResponseEntity.ok(savedUser);
+        } catch (UserCustomException e) {
+            throw e; // Re-throw custom exceptions
+        } catch (Exception e) {
+            throw new UserCustomException("Unable to update user profile, please try again");
+        }
     }
 
     @PostMapping("/order")

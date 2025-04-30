@@ -40,6 +40,8 @@ public class CartEntity implements Serializable {
     private String productName;
 
     private String productCategory;
+    
+    private String productImage;
 
     @Column(name = "is_ordered", columnDefinition = "boolean default false")
     private boolean isOrdered;

@@ -11,6 +11,8 @@ import java.util.List;
 @Transactional
 public interface OrderRepository extends JpaRepository<OrderEntity, Integer> {
     OrderEntity findByOrderId(int orderId);
+    
+    List<OrderEntity> findByEmail(String email);
 
     List<OrderEntity> findAll();
 }
