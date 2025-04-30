@@ -7,6 +7,7 @@ import java.util.logging.Logger;
 import com.CSIT321.Hkotisk.Constant.ResponseCode;
 import com.CSIT321.Hkotisk.Constant.WebConstants;
 import com.CSIT321.Hkotisk.DTO.cartDTO;
+import com.CSIT321.Hkotisk.DTO.OrderDetailsDTO;
 import com.CSIT321.Hkotisk.Entity.CartEntity;
 import com.CSIT321.Hkotisk.Entity.OrderEntity;
 import com.CSIT321.Hkotisk.Entity.ProductEntity;
@@ -207,14 +208,32 @@ public class UserController extends TextWebSocketHandler {
         return new ResponseEntity<CartResponse>(resp, HttpStatus.OK);
     }
 
-    // Get user's orders
+    // Get user's orders with details
     @GetMapping("/orders")
     public ResponseEntity<?> getUserOrders(Authentication auth) throws IOException {
         try {
             User loggedUser = userRepo.findByEmail(auth.getName())
                     .orElseThrow(() -> new UserCustomException(auth.getName()));
+            
             List<OrderEntity> userOrders = ordRepo.findByEmail(loggedUser.getEmail());
-            return ResponseEntity.ok(userOrders);
+            List<OrderDetailsDTO> orderDetails = new ArrayList<>();
+            
+            for (OrderEntity order : userOrders) {
+                OrderDetailsDTO details = new OrderDetailsDTO();
+                details.setOrderId(order.getOrderId());
+                details.setEmail(order.getEmail());
+                details.setOrderStatus(order.getOrderStatus());
+                details.setOrderDate(order.getOrderDate());
+                details.setTotalCost(order.getTotalCost());
+                
+                // Get cart items for this order
+                List<CartEntity> items = cartRepo.findAllByOrderId(order.getOrderId());
+                details.setItems(items);
+                
+                orderDetails.add(details);
+            }
+            
+            return ResponseEntity.ok(orderDetails);
         } catch (Exception e) {
             throw new OrderCustomException("Unable to retrieve orders, please try again");
         }
