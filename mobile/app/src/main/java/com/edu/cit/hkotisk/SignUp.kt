@@ -1,12 +1,14 @@
 package com.edu.cit.hkotisk
 
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import com.edu.cit.hkotisk.data.api.RetrofitClient
-import com.edu.cit.hkotisk.data.model.SignUpRequest
+import com.edu.cit.hkotisk.data.model.AuthRequest
+import com.edu.cit.hkotisk.data.model.AuthResponse
 import com.edu.cit.hkotisk.databinding.ActivitySignupBinding
 import kotlinx.coroutines.launch
 
@@ -14,7 +16,6 @@ class SignUp : AppCompatActivity() {
     private lateinit var binding: ActivitySignupBinding
     private var isPasswordVisible = false
     private var isConfirmPasswordVisible = false
-
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -39,9 +40,6 @@ class SignUp : AppCompatActivity() {
             if (validateForm()) {
                 performSignUp()
             }
-        }
-        binding.loginText.setOnClickListener {
-            startActivity(Intent(this@SignUp, Login::class.java))
         }
     }
 
@@ -115,8 +113,8 @@ class SignUp : AppCompatActivity() {
 
         lifecycleScope.launch {
             try {
-                val response = RetrofitClient.authService.signUp(
-                    SignUpRequest(
+                val response = RetrofitClient.createAuthService(this as Context).signUp(
+                    AuthRequest.SignUpRequest(
                         email = username,
                         username = username,
                         password = password

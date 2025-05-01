@@ -1,9 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Hkotisk_mobile</string>
-    <string name="app_logo">HKOTISK</string>
+    <string name="app_name">HKotisk</string>
+    <string name="app_logo">HKotisk Logo</string>
+    <string name="login_with_microsoft">Login with Microsoft</string>
+    
+    <!-- Canteen List -->
     <string-array name="canteen_list">
         <item>Canteen 1</item>
         <item>Canteen 2</item>
         <item>Canteen 3</item>
+        <item>Canteen 4</item>
+        <item>Canteen 5</item>
     </string-array>
+
 </resources>

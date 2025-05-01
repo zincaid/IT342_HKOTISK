@@ -1,5 +1,6 @@
 package com.edu.cit.hkotisk
 
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.view.View
@@ -7,7 +8,7 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import com.edu.cit.hkotisk.data.api.RetrofitClient
-import com.edu.cit.hkotisk.data.model.SignInRequest
+import com.edu.cit.hkotisk.data.model.AuthRequest
 import com.edu.cit.hkotisk.databinding.ActivityLoginBinding
 import kotlinx.coroutines.launch
 
@@ -92,7 +93,7 @@ class Login : AppCompatActivity() {
         
         lifecycleScope.launch {
             try {
-                val response = RetrofitClient.authService.signIn(SignInRequest(email, password))
+                val response = RetrofitClient.createAuthService(this@Login).signIn(AuthRequest.SignInRequest(email, password))
                 
                 if (response.isSuccessful && response.body() != null) {
                     val authResponse = response.body()!!
@@ -102,7 +103,7 @@ class Login : AppCompatActivity() {
                         putString("role", authResponse.role)
                         apply()
                     }
-                    
+
                     // Navigate to Dashboard
                     startActivity(Intent(this@Login, Dashboard::class.java).apply {
                         flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK

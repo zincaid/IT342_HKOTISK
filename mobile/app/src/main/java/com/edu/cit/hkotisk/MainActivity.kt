@@ -12,7 +12,17 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_starter_page)
 
         Handler(Looper.getMainLooper()).postDelayed({
-            startActivity(Intent(this, SignUp::class.java))
+            // Check if token exists in SharedPreferences
+            val sharedPrefs = getSharedPreferences("auth_prefs", MODE_PRIVATE)
+            val token = sharedPrefs.getString("token", null)
+            
+            if (token != null) {
+                // Token exists, redirect to Dashboard
+                startActivity(Intent(this, Dashboard::class.java))
+            } else {
+                // No token, go to Login
+                startActivity(Intent(this, Login::class.java))
+            }
             finish()
         }, 2000)
     }

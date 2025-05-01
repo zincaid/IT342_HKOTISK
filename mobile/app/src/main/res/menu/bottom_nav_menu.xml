@@ -1,19 +1,27 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
     <item
-        android:id="@+id/nav_home"
-        android:icon="@drawable/home_not_click"
-        android:title="Home" />
+        android:id="@+id/navigation_dashboard"
+        android:icon="@android:drawable/ic_menu_compass"
+        android:iconTint="@color/maroon"
+        android:title="Dashboard"/>
+
+
     <item
-        android:id="@+id/nav_orders"
-        android:icon="@drawable/order"
-        android:title="Orders" />
+        android:id="@+id/navigation_cart"
+        android:icon="@drawable/ic_cart"
+        android:iconTint="@color/maroon"
+        android:title="Cart"/>
+
     <item
-        android:id="@+id/nav_cart"
-        android:icon="@drawable/basket_not_clicked"
-        android:title="Cart" />
+        android:id="@+id/navigation_orders"
+        android:icon="@drawable/ic_orders"
+        android:iconTint="@color/maroon"
+        android:title="Orders"/>
+
     <item
-        android:id="@+id/nav_profile"
-        android:icon="@drawable/user_not_clicked"
-        android:title="Profile" />
+        android:id="@+id/navigation_profile"
+        android:icon="@drawable/ic_user"
+        android:iconTint="@color/maroon"
+        android:title="Profile"/>
 </menu>

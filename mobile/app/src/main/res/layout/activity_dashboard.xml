@@ -26,14 +26,16 @@
 
             <ImageView
                 android:id="@+id/canteen_icon"
-                android:layout_width="36dp"
+                android:layout_width="136dp"
                 android:layout_height="36dp"
-                android:background="@drawable/ic_whitebackground"
-                android:padding="8dp"
+                android:layout_marginStart="8dp"
+                android:background="@drawable/hkotisklogo"
+                android:layout_marginTop="5dp"
                 android:src="@drawable/pin"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintVertical_bias="1.0" />
 
             <LinearLayout
                 android:layout_width="0dp"
@@ -45,27 +47,9 @@
                 app:layout_constraintStart_toEndOf="@id/canteen_icon"
                 app:layout_constraintTop_toTopOf="parent">
 
-                <Spinner
-                    android:id="@+id/canteen_spinner"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="8dp"
-                    android:backgroundTint="@color/white"
-                    android:popupBackground="@color/white"
-                    android:spinnerMode="dropdown"
-                    android:entries="@array/canteen_list"
-                    android:textColor="@color/white"
-                    android:textSize="12sp" />
 
-                <TextView
-                    android:id="@+id/canteen_location"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="8dp"
-                    android:layout_marginTop="4dp"
-                    android:text="Canteen 1 (Behind NGE)"
-                    android:textColor="@color/white"
-                    android:textSize="14sp" />
+
+
             </LinearLayout>
 
             <ImageView
@@ -137,36 +121,15 @@
                 android:paddingEnd="16dp"
                 android:layout_marginTop="8dp" />
 
-            <!-- Order Again Section -->
-            <TextView
-                android:id="@+id/order_again_label"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Order Again"
-                android:textSize="18sp"
-                android:textStyle="bold"
-                android:textColor="@color/black"
-                app:layout_constraintTop_toBottomOf="@id/top_selling_recycler"
-                app:layout_constraintStart_toStartOf="parent"
-                android:layout_marginStart="16dp"
-                android:layout_marginTop="16dp" />
 
-            <TextView
-                android:id="@+id/see_all_text"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="See all"
-                android:textColor="@color/gray"
-                app:layout_constraintTop_toTopOf="@id/order_again_label"
-                app:layout_constraintBottom_toBottomOf="@id/order_again_label"
-                app:layout_constraintEnd_toEndOf="parent"
-                android:layout_marginEnd="16dp" />
+
+
 
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/order_again_recycler"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                app:layout_constraintTop_toBottomOf="@id/order_again_label"
+                app:layout_constraintTop_toBottomOf="@id/top_selling_recycler"
                 android:orientation="horizontal"
                 android:clipToPadding="false"
                 android:paddingStart="16dp"
@@ -237,6 +200,10 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:menu="@menu/bottom_nav_menu"
         android:background="@color/white"
+        app:itemIconTint="@color/nav_item_color"
+        app:itemTextColor="@color/nav_item_color"
+        app:elevation="8dp"
+        app:itemRippleColor="@color/BackgroundGold"
         app:labelVisibilityMode="labeled" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

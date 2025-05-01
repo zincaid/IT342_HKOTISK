@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="8dp"
+    app:cardCornerRadius="8dp"
+    app:cardElevation="4dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:background="@color/BackgroundGold"
+        android:padding="16dp">
+
+        <ImageView
+            android:id="@+id/productImage"
+            android:layout_width="250dp"
+            android:layout_height="150dp"
+            android:layout_gravity="center"
+            android:scaleType="fitCenter"/>
+
+        <TextView
+            android:id="@+id/productName"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:textColor="@color/maroon"
+            android:textSize="14sp"
+            android:textStyle="bold"/>
+
+        <TextView
+            android:id="@+id/productPrice"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textColor="@color/maroon"
+            android:layout_marginTop="4dp"
+            android:textSize="16sp"/>
+
+        <TextView
+            android:id="@+id/productDescription"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:textColor="@color/black"
+            android:textSize="14sp"/>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginTop="8dp"
+            android:gravity="center_horizontal">
+
+            <Button
+                android:id="@+id/decrementButton"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:text="-"
+                android:textColor="@color/white"
+                android:textSize="20sp"
+                android:backgroundTint="@color/maroon"/>
+
+            <TextView
+                android:id="@+id/quantityDisplay"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="1"
+                android:textColor="@color/black"
+                android:textSize="18sp"
+                android:gravity="center"
+                android:layout_marginHorizontal="8dp"/>
+
+            <Button
+                android:id="@+id/incrementButton"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:text="+"
+                android:textColor="@color/white"
+                android:textSize="20sp"
+                android:backgroundTint="@color/maroon"/>
+        </LinearLayout>
+
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp">
+
+            <Button
+                android:id="@+id/addToCartButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:backgroundTint="@color/maroon"
+                android:textColor="@color/white"
+                android:textSize="11dp"
+                android:text="Add to Cart"/>
+
+            <ProgressBar
+                android:id="@+id/loadingSpinner"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:layout_gravity="center"
+                android:visibility="gone"
+                android:indeterminateTint="@color/maroon"/>
+        </FrameLayout>
+
+        <TextView
+            android:id="@+id/availabilityStatus"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:gravity="center"
+            android:textColor="#FF0000"
+            android:visibility="gone"
+            android:text="Out of Stock"/>
+    </LinearLayout>
+
+</androidx.cardview.widget.CardView>
