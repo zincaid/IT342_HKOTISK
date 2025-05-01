@@ -17,7 +17,7 @@ public class CorsConfig {
             @Override
             public void addCorsMappings(CorsRegistry registry) {
                 registry.addMapping("/**")
-                    .allowedOrigins("http://localhost:5173", "https://accounts.google.com", "https://login.microsoftonline.com")
+                    .allowedOrigins("http://localhost:5173", "https://accounts.google.com", "https://login.microsoftonline.com", "https://it-342-hkotisk-4q3i.vercel.app")
                     .allowedMethods("*")
                     .allowedHeaders("*")
                     .allowCredentials(true);
