@@ -6,6 +6,7 @@ import { HashRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "./contexts/AuthContext";
 import { ProductProvider } from "./contexts/ProductContext";
 import { OrderProvider } from "./contexts/OrderContext";
+import { CartProvider } from "./contexts/CartContext";
 import ProtectedRoute from "./components/ProtectedRoute";
 import { StaffLayout } from "./components/StaffLayout";
 
@@ -25,6 +26,7 @@ import OrderManagement from "./pages/OrderManagement";
 
 const queryClient = new QueryClient();
 
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
@@ -32,8 +34,9 @@ const App = () => (
         <AuthProvider>
           <ProductProvider>
             <OrderProvider>
-              <Toaster />
-              <Sonner />
+              <CartProvider>
+                <Toaster />
+                <Sonner />
               <Routes>
                 {/* Common Routes */}
                 <Route path="/" element={<Index />} />
@@ -41,8 +44,18 @@ const App = () => (
                 {/* Student Routes */}
                 <Route path="/student/login" element={<StudentLogin />} />
                 <Route path="/student/signup" element={<StudentSignup />} />
-                <Route path="/student/dashboard" element={<StudentView />} />
-                <Route path="/cart" element={<CartPage />} />
+                <Route path="/student/dashboard" element={
+                  <ProtectedRoute 
+                    element={<StudentView />} 
+                    allowedRoles={["student"]}
+                  />
+                } />
+                <Route path="/cart" element={
+                  <ProtectedRoute 
+                    element={<CartPage />} 
+                    allowedRoles={["student"]}
+                  />
+                } />
                 
                 {/* Staff Routes */}
                 <Route path="/auth" element={<StaffLogin />} />
@@ -65,6 +78,8 @@ const App = () => (
                           </Routes>
                         </StaffLayout>
                       }
+                      allowedRoles={["staff", "admin"]}
+                      redirectTo="/staff/login"
                     />
                   }
                 />
@@ -72,6 +87,7 @@ const App = () => (
                 {/* Catch-all */}
                 <Route path="*" element={<NotFound />} />
               </Routes>
+              </CartProvider>
             </OrderProvider>
           </ProductProvider>
         </AuthProvider>
