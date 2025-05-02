@@ -80,7 +80,7 @@ export function OrderProvider({ children }: { children: ReactNode }) {
     
     fetchOrders()
 
-    const socket = new WebSocket(`ws://${wsURL}/ws/orders`)
+    const socket = new WebSocket(`${wsURL}/orders`)
     
     socket.onopen = () => {
       console.log('WebSocket connection established')

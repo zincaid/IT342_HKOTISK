@@ -74,7 +74,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
     fetchCart()
 
     // Set up WebSocket connection for real-time updates
-    const socket = new WebSocket(`ws://${wsURL}/ws/orders`)
+    const socket = new WebSocket(`${wsURL}/ws/orders`)
     
     socket.onopen = () => {
       console.log('WebSocket connection established')
