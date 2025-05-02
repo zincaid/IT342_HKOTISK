@@ -130,7 +130,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     localStorage.removeItem('role');
     delete axios.defaults.headers.common['Authorization'];
     toast.info("You've been logged out");
-    navigate('/staff/login');
+    navigate('/');
   };
 
   return (

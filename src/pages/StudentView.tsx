@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useProducts, Product } from "@/contexts/ProductContext";
+import { useAuth } from "@/contexts/AuthContext";
 import { useCart } from "@/contexts/CartContext";
 import { ProductCard } from "@/components/ProductCard";
 import { Button } from "@/components/ui/button";
@@ -12,7 +13,8 @@ import {
   X, 
   ShoppingCart, 
   Filter,
-  ChevronDown
+  ChevronDown,
+  LogOut
 } from "lucide-react";
 import {
   Sheet,
@@ -37,6 +39,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { toast } from "sonner";
 
 const StudentView = () => {
+  const { logout } = useAuth();
   const baseUrl = import.meta.env.VITE_BASE_URL;
   const { products, isLoading } = useProducts();
   const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
@@ -274,8 +277,9 @@ const StudentView = () => {
                 </Button>
               </div>
 
-              {/* Cart Button */}
-              <Sheet>
+              {/* Cart and Logout Buttons */}
+              <div className="flex gap-2">
+                <Sheet>
                 <SheetTrigger asChild>
                   <Button variant="outline" className="relative">
                     <ShoppingCart className="h-4 w-4 mr-2" />
@@ -545,7 +549,18 @@ const StudentView = () => {
                     </div>
                   </SheetFooter>
                 </SheetContent>
-              </Sheet>
+                </Sheet>
+                
+                {/* Logout Button */}
+                <Button 
+                  variant="outline" 
+                  onClick={logout}
+                  className="flex items-center"
+                >
+                  <LogOut className="h-4 w-4 mr-2" />
+                  <span>Logout</span>
+                </Button>
+              </div>
             </div>
           </div>
 
