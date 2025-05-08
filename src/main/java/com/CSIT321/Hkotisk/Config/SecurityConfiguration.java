@@ -47,7 +47,7 @@ public class SecurityConfiguration {
                     .permitAll()
                 .requestMatchers("/user/**", "/auth/role", 
                     "/user/products", "/user/addToCart", "/user/cart", 
-                    "/user/order").hasAnyAuthority("ROLE_STUDENT", "ROLE_STAFF")
+                    "/user/order", "/user/orders/**").hasAnyAuthority("ROLE_STUDENT", "ROLE_STAFF")
                 .requestMatchers("/staff/**", "/staff/product", 
                     "/staff/orders", "/staff/order").hasAuthority("ROLE_STAFF")
                 .anyRequest().authenticated()

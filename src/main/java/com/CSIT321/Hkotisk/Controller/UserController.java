@@ -297,8 +297,41 @@ public class UserController extends TextWebSocketHandler {
         }
     }
 
-    @PostMapping("/order")
-    public ResponseEntity<ServerResponse> placeOrder(Authentication auth) throws IOException {
+// Cancel an order if it's in PENDING status
+@PutMapping("/orders/{orderId}/cancel")
+public ResponseEntity<?> cancelOrder(@PathVariable int orderId, Authentication auth) throws IOException {
+    try {
+        User loggedUser = userRepo.findByEmail(auth.getName())
+                .orElseThrow(() -> new UserCustomException(auth.getName()));
+        
+        OrderEntity order = ordRepo.findByOrderId(orderId);
+        if (order == null) {
+            throw new OrderCustomException("Order not found");
+        }
+        
+        // Verify order belongs to the user
+        if (!order.getEmail().equals(loggedUser.getEmail())) {
+            throw new OrderCustomException("Not authorized to cancel this order");
+        }
+        
+        // Check if order is already completed or cancelled
+        if (order.getOrderStatus().equals("COMPLETED") || order.getOrderStatus().equals("CANCELLED")) {
+            throw new OrderCustomException("Order cannot be cancelled as it is already " + order.getOrderStatus().toLowerCase());
+        }
+        
+        // Update order status to CANCELLED
+        order.setOrderStatus("CANCELLED");
+        ordRepo.save(order);
+        
+        // Return updated order details
+        return ResponseEntity.ok(order);
+    } catch (Exception e) {
+        throw new OrderCustomException(e.getMessage());
+    }
+}
+
+@PostMapping("/order")
+public ResponseEntity<ServerResponse> placeOrder(Authentication auth) throws IOException {
         ServerResponse resp = new ServerResponse();
         try {
             User loggedUser = userRepo.findByEmail(auth.getName())
