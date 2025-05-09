@@ -177,7 +177,7 @@ export default function OrderManagement() {
               <Select
                 value={order.orderStatus}
                 onValueChange={(value) => handleStatusChange(order.orderId, value, order.orderBy)}
-                disabled={updatingOrderId === order.orderId}
+                disabled={updatingOrderId === order.orderId || order.orderStatus === "COMPLETED" || order.orderStatus === "CANCELLED"}
               >
                 <SelectTrigger className="w-[140px]">
                   <SelectValue>
@@ -189,10 +189,26 @@ export default function OrderManagement() {
                   </SelectValue>
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="PENDING">Pending</SelectItem>
-                  <SelectItem value="PROCESSING">Processing</SelectItem>
-                  <SelectItem value="COMPLETED">Completed</SelectItem>
-                  <SelectItem value="CANCELLED">Cancelled</SelectItem>
+                  {order.orderStatus === "PENDING" && (
+                    <>
+                      <SelectItem value="PENDING">Pending</SelectItem>
+                      <SelectItem value="PROCESSING">Processing</SelectItem>
+                      <SelectItem value="CANCELLED">Cancelled</SelectItem>
+                    </>
+                  )}
+                  {order.orderStatus === "PROCESSING" && (
+                    <>
+                      <SelectItem value="PROCESSING">Processing</SelectItem>
+                      <SelectItem value="COMPLETED">Completed</SelectItem>
+                      <SelectItem value="CANCELLED">Cancelled</SelectItem>
+                    </>
+                  )}
+                  {order.orderStatus === "COMPLETED" && (
+                    <SelectItem value="COMPLETED">Completed</SelectItem>
+                  )}
+                  {order.orderStatus === "CANCELLED" && (
+                    <SelectItem value="CANCELLED">Cancelled</SelectItem>
+                  )}
                 </SelectContent>
               </Select>
             </CardFooter>

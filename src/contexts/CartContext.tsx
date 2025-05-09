@@ -2,7 +2,7 @@ import { createContext, useContext, ReactNode, useState, useEffect, useCallback 
 import { useToast } from "@/components/ui/use-toast"
 import axios from "axios"
 
-interface CartItem {
+export interface CartItem {
   cartId: number
   orderId: number
   email: string
@@ -74,30 +74,56 @@ export function CartProvider({ children }: { children: ReactNode }) {
     fetchCart()
 
     // Set up WebSocket connection for real-time updates
-    const socket = new WebSocket(`${wsURL}/ws/orders`)
+    let socket: WebSocket;
+    let reconnectAttempt = 0;
+    const maxReconnectAttempts = 5;
     
-    socket.onopen = () => {
-      console.log('WebSocket connection established')
-    }
+    const connectWebSocket = () => {
+      const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+      const wsEndpoint = `${protocol}//localhost:8080/ws/orders`;
+      socket = new WebSocket(wsEndpoint);
+      
+      // Send authentication token immediately after connection
+      socket.onopen = () => {
+        console.log('WebSocket connection established');
+        socket.send(JSON.stringify({ type: 'auth', token }));
+        reconnectAttempt = 0; // Reset reconnect attempts on successful connection
+      };
+      
 
-    socket.onmessage = () => {
-      fetchCart() // Refresh cart on updates
-    }
+      socket.onmessage = () => {
+        fetchCart(); // Refresh cart on updates
+      };
 
-    socket.onerror = (error) => {
-      console.error('WebSocket error: ', error)
-      toast({
-        title: "Connection Error",
-        description: "Real-time updates may be delayed",
-        variant: "destructive"
-      })
-    }
+      socket.onerror = (error) => {
+        console.error('WebSocket error: ', error);
+      };
+
+      socket.onclose = () => {
+        if (reconnectAttempt < maxReconnectAttempts) {
+          const timeout = Math.min(1000 * Math.pow(2, reconnectAttempt), 10000);
+          console.log(`WebSocket connection closed. Attempting to reconnect in ${timeout}ms`);
+          setTimeout(() => {
+            reconnectAttempt++;
+            connectWebSocket();
+          }, timeout);
+        } else {
+          toast({
+            title: "Connection Error",
+            description: "Real-time updates are currently unavailable. Please refresh the page to try again.",
+            variant: "destructive"
+          });
+        }
+      };
+    };
+
+    connectWebSocket();
 
     return () => {
-      if (socket.readyState === WebSocket.OPEN) {
-        socket.close()
+      if (socket && socket.readyState === WebSocket.OPEN) {
+        socket.close();
       }
-    }
+    };
   }, [token, fetchCart, toast])
 
   return (

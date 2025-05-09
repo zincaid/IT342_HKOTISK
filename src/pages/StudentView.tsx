@@ -3,6 +3,8 @@ import axios from "axios";
 import { useProducts, Product } from "@/contexts/ProductContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCart } from "@/contexts/CartContext";
+import { CheckoutModal } from "@/components/CheckoutModal";
+import { OrderHistoryModal } from "@/components/OrderHistoryModal";
 import { ProductCard } from "@/components/ProductCard";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -51,6 +53,9 @@ const StudentView = () => {
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
   const [tempQuantities, setTempQuantities] = useState<Record<number, number>>({});
   const [updateTimers, setUpdateTimers] = useState<Record<number, NodeJS.Timeout>>({});
+  const [isCheckoutModalOpen, setIsCheckoutModalOpen] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isOrderHistoryOpen, setIsOrderHistoryOpen] = useState(false);
   
   // Calculate max price for filter
   const maxPrice = Math.max(...products.map(product => product.price), 0);
@@ -332,7 +337,8 @@ const StudentView = () => {
                                         return;
                                       }
 
-                                      await axios.delete(`${baseUrl}/user/cart/${item.cartId}`, {
+                                      await axios.delete(`${baseUrl}/user/cart`, {
+                                        params: { cartId: item.cartId },
                                         headers: {
                                           Authorization: `Bearer ${authToken}`,
                                         },
@@ -360,15 +366,18 @@ const StudentView = () => {
                                     onClick={() => {
                                       if (item.quantity <= 1) return;
                                       
-                                      const newQuantity = (tempQuantities[item.cartId] ?? item.quantity) - 1;
+                                      const currentQuantity = tempQuantities[item.cartId] ?? item.quantity;
+                                      const newQuantity = currentQuantity - 1;
+                                      
+                                      // Update the temporary quantity immediately
                                       setTempQuantities(prev => ({ ...prev, [item.cartId]: newQuantity }));
                                       
-                                      // Clear existing timer if any
+                                      // Clear any existing update timer
                                       if (updateTimers[item.cartId]) {
                                         clearTimeout(updateTimers[item.cartId]);
                                       }
                                       
-                                      // Set new timer for this cart item
+                                      // Create a new timer for the API call
                                       const timer = setTimeout(async () => {
                                         try {
                                           const authToken = localStorage.getItem('token');
@@ -376,46 +385,55 @@ const StudentView = () => {
                                             toast.error("Please login");
                                             return;
                                           }
-
-                                          await axios.post(`${baseUrl}/user/cart`, {
-                                            productId: item.productId,
-                                            email: localStorage.getItem('email'),
-                                            quantity: newQuantity,
-                                            price: item.price,
-                                            ordered: false
-                                          }, {
+                                          
+                                          // Get the latest temporary quantity and validate
+                                          const finalQuantity = tempQuantities[item.cartId] ?? item.quantity;
+                                          if (!item.cartId || finalQuantity === undefined) {
+                                            throw new Error('Invalid cart item data');
+                                          }
+                                          
+                          await axios.put(`${baseUrl}/user/cart`, {
+                            id: item.cartId,
+                            quantity: finalQuantity-1
+                          }, {
                                             headers: {
                                               Authorization: `Bearer ${authToken}`,
                                               'Content-Type': 'application/json',
                                             },
                                           });
                                           
+                                          // Fetch the updated cart
                                           await fetchCart();
-                                          // Clear temp quantity after successful update
+                                          
+                                          // Clear temporary quantity
                                           setTempQuantities(prev => {
                                             const newTemp = { ...prev };
                                             delete newTemp[item.cartId];
                                             return newTemp;
                                           });
-                                        } catch (error) {
+                                        } catch (error: any) {
                                           console.error('Error updating quantity:', error);
+                                          console.log('Error response data:', error.response?.data);
                                           toast.error("Failed to update quantity");
-                                          // Reset temp quantity on error
+                                          
+                                          // Reset to original quantity on error
                                           setTempQuantities(prev => {
+                                            const newTemp = { ...prev };
+                                            delete newTemp[item.cartId];
+                                            return newTemp;
+                                          });
+                                          await fetchCart();
+                                        } finally {
+                                          // Clear timer reference
+                                          setUpdateTimers(prev => {
                                             const newTemp = { ...prev };
                                             delete newTemp[item.cartId];
                                             return newTemp;
                                           });
                                         }
-                                        // Clear timer reference
-                                        setUpdateTimers(prev => {
-                                          const newTimers = { ...prev };
-                                          delete newTimers[item.cartId];
-                                          return newTimers;
-                                        });
-                                      }, 3000);
+                                      }, 1000); // Reduced timeout to 1 second
                                       
-                                      // Save timer reference
+                                      // Save the new timer reference
                                       setUpdateTimers(prev => ({
                                         ...prev,
                                         [item.cartId]: timer
@@ -434,15 +452,18 @@ const StudentView = () => {
                                     size="icon"
                                     className="h-6 w-6 rounded-full"
                                     onClick={() => {
-                                      const newQuantity = (tempQuantities[item.cartId] ?? item.quantity) + 1;
+                                      const currentQuantity = tempQuantities[item.cartId] ?? item.quantity;
+                                      const newQuantity = currentQuantity + 1;
+                                      
+                                      // Update the temporary quantity immediately
                                       setTempQuantities(prev => ({ ...prev, [item.cartId]: newQuantity }));
                                       
-                                      // Clear existing timer if any
+                                      // Clear any existing update timer
                                       if (updateTimers[item.cartId]) {
                                         clearTimeout(updateTimers[item.cartId]);
                                       }
                                       
-                                      // Set new timer for this cart item
+                                      // Create a new timer for the API call
                                       const timer = setTimeout(async () => {
                                         try {
                                           const authToken = localStorage.getItem('token');
@@ -450,46 +471,55 @@ const StudentView = () => {
                                             toast.error("Please login");
                                             return;
                                           }
-
-                                          await axios.post(`${baseUrl}/user/cart`, {
-                                            productId: item.productId,
-                                            email: localStorage.getItem('email'),
-                                            quantity: newQuantity,
-                                            price: item.price,
-                                            ordered: false
-                                          }, {
+                                          
+                                          // Get the latest temporary quantity and validate
+                                          const finalQuantity = tempQuantities[item.cartId] ?? item.quantity;
+                                          if (!item.cartId || finalQuantity === undefined) {
+                                            throw new Error('Invalid cart item data');
+                                          }
+                                          
+                                      await axios.put(`${baseUrl}/user/cart`, {
+                                        id: item.cartId,
+                                        quantity: finalQuantity+1
+                                      }, {
                                             headers: {
                                               Authorization: `Bearer ${authToken}`,
                                               'Content-Type': 'application/json',
                                             },
                                           });
                                           
+                                          // Fetch the updated cart
                                           await fetchCart();
-                                          // Clear temp quantity after successful update
+                                          
+                                          // Clear temporary quantity
                                           setTempQuantities(prev => {
                                             const newTemp = { ...prev };
                                             delete newTemp[item.cartId];
                                             return newTemp;
                                           });
-                                        } catch (error) {
+                                        } catch (error: any) {
                                           console.error('Error updating quantity:', error);
+                                          console.log('Error response data:', error.response?.data);
                                           toast.error("Failed to update quantity");
-                                          // Reset temp quantity on error
+                                          
+                                          // Reset to original quantity on error
                                           setTempQuantities(prev => {
+                                            const newTemp = { ...prev };
+                                            delete newTemp[item.cartId];
+                                            return newTemp;
+                                          });
+                                          await fetchCart();
+                                        } finally {
+                                          // Clear timer reference
+                                          setUpdateTimers(prev => {
                                             const newTemp = { ...prev };
                                             delete newTemp[item.cartId];
                                             return newTemp;
                                           });
                                         }
-                                        // Clear timer reference
-                                        setUpdateTimers(prev => {
-                                          const newTimers = { ...prev };
-                                          delete newTimers[item.cartId];
-                                          return newTimers;
-                                        });
-                                      }, 3000);
+                                      }, 1000); // Reduced timeout to 1 second
                                       
-                                      // Save timer reference
+                                      // Save the new timer reference
                                       setUpdateTimers(prev => ({
                                         ...prev,
                                         [item.cartId]: timer
@@ -521,8 +551,17 @@ const StudentView = () => {
               <Button 
                 className="w-full" 
                 disabled={cart.length === 0}
-                onClick={async () => {
+                onClick={() => setIsCheckoutModalOpen(true)}
+              >
+                Checkout
+              </Button>
+
+              <CheckoutModal 
+                isOpen={isCheckoutModalOpen}
+                onClose={() => setIsCheckoutModalOpen(false)}
+                onConfirm={async () => {
                   try {
+                    setIsSubmitting(true);
                     const authToken = localStorage.getItem('token');
                     if (!authToken) {
                       toast.error("Please login to checkout");
@@ -538,28 +577,61 @@ const StudentView = () => {
                     
                     await fetchCart();
                     toast.success("Order placed successfully!");
+                    setIsCheckoutModalOpen(false);
                   } catch (error) {
                     console.error('Error during checkout:', error);
                     toast.error("Failed to place order. Please try again.");
+                  } finally {
+                    setIsSubmitting(false);
                   }
                 }}
-              >
-                Checkout
-              </Button>
+                isLoading={isSubmitting}
+                cartItems={cart}
+                cartTotal={cartTotal}
+              />
                     </div>
                   </SheetFooter>
                 </SheetContent>
                 </Sheet>
                 
-                {/* Logout Button */}
-                <Button 
-                  variant="outline" 
-                  onClick={logout}
-                  className="flex items-center"
-                >
-                  <LogOut className="h-4 w-4 mr-2" />
-                  <span>Logout</span>
-                </Button>
+                {/* Order History and Logout Buttons */}
+                <div className="flex gap-2">
+                  <Button 
+                    variant="outline" 
+                    onClick={() => setIsOrderHistoryOpen(true)}
+                    className="flex items-center"
+                  >
+                    <svg 
+                      xmlns="http://www.w3.org/2000/svg" 
+                      className="h-4 w-4 mr-2" 
+                      fill="none" 
+                      viewBox="0 0 24 24" 
+                      stroke="currentColor"
+                    >
+                      <path 
+                        strokeLinecap="round" 
+                        strokeLinejoin="round" 
+                        strokeWidth={2} 
+                        d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" 
+                      />
+                    </svg>
+                    <span>Orders</span>
+                  </Button>
+
+                  <Button 
+                    variant="outline" 
+                    onClick={logout}
+                    className="flex items-center"
+                  >
+                    <LogOut className="h-4 w-4 mr-2" />
+                    <span>Logout</span>
+                  </Button>
+                </div>
+
+                <OrderHistoryModal
+                  isOpen={isOrderHistoryOpen}
+                  onClose={() => setIsOrderHistoryOpen(false)}
+                />
               </div>
             </div>
           </div>

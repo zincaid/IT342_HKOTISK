@@ -51,6 +51,22 @@ export function OrderProvider({ children }: { children: ReactNode }) {
   const updateOrderStatus = async (orderId: number, orderStatus: string, email: string) => {
     if (!token) return
 
+    // Find the current order
+    const currentOrder = orders.find(order => order.orderId === orderId);
+    if (!currentOrder) {
+      throw new Error("Order not found");
+    }
+
+    // Prevent status changes if order is completed or cancelled
+    if (currentOrder.orderStatus === "completed" || currentOrder.orderStatus === "cancelled") {
+      throw new Error(`Cannot change status of ${currentOrder.orderStatus} order`);
+    }
+
+    // Prevent reverting from processing to pending
+    if (currentOrder.orderStatus === "processing" && orderStatus === "pending") {
+      throw new Error("Cannot revert processing order back to pending");
+    }
+
     try {
       await axios.post(
         `${baseUrl}/staff/order`,
@@ -80,30 +96,55 @@ export function OrderProvider({ children }: { children: ReactNode }) {
     
     fetchOrders()
 
-    const socket = new WebSocket(`${wsURL}/orders`)
+    let socket: WebSocket;
+    let reconnectAttempt = 0;
+    const maxReconnectAttempts = 5;
     
-    socket.onopen = () => {
-      console.log('WebSocket connection established')
-    }
+    const connectWebSocket = () => {
+      const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+      const wsEndpoint = `${protocol}//localhost:8080/ws/orders`;
+      socket = new WebSocket(wsEndpoint);
+      
+      // Send authentication token immediately after connection
+      socket.onopen = () => {
+        console.log('WebSocket connection established');
+        socket.send(JSON.stringify({ type: 'auth', token }));
+        reconnectAttempt = 0; // Reset reconnect attempts on successful connection
+      };
 
-    socket.onmessage = () => {
-      fetchOrders()
-    }
+      socket.onmessage = () => {
+        fetchOrders(); // Refresh orders on updates
+      };
 
-    socket.onerror = (error) => {
-      console.error('WebSocket error: ', error)
-      toast({
-        title: "Connection Error",
-        description: "Real-time updates may be delayed",
-        variant: "destructive"
-      })
-    }
+      socket.onerror = (error) => {
+        console.error('WebSocket error: ', error);
+      };
+
+      socket.onclose = () => {
+        if (reconnectAttempt < maxReconnectAttempts) {
+          const timeout = Math.min(1000 * Math.pow(2, reconnectAttempt), 10000);
+          console.log(`WebSocket connection closed. Attempting to reconnect in ${timeout}ms`);
+          setTimeout(() => {
+            reconnectAttempt++;
+            connectWebSocket();
+          }, timeout);
+        } else {
+          toast({
+            title: "Connection Error",
+            description: "Real-time updates are currently unavailable. Please refresh the page to try again.",
+            variant: "destructive"
+          });
+        }
+      };
+    };
+
+    connectWebSocket();
 
     return () => {
-      if (socket.readyState === WebSocket.OPEN) {
-        socket.close()
+      if (socket && socket.readyState === WebSocket.OPEN) {
+        socket.close();
       }
-    }
+    };
   }, [token, fetchOrders, toast])
 
   return (

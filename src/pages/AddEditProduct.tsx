@@ -53,6 +53,10 @@ const AddEditProduct = () => {
       }
     } catch (error) {
       console.error("Error saving product:", error);
+      if (error.response?.data?.message) {
+        // Let the form component handle the error
+        throw error;
+      }
     } finally {
       setIsSubmitting(false);
     }
